@@ -61,65 +61,85 @@ class FlashcardDeck:
             self.cards = self.cards[0:i] + self.cards[i+1:]
             return card
 
-# create_addition_deck(level)
-# Create addition/subtraction flashcards with numbers 0, 1, ..., level
+# create_addition_deck(min_num, max_num, max_seconds)
+# Create addition flashcards with numbers min_num, ..., max_num
 # return a FlashcardDeck
-def create_addition_deck(level, max_seconds):
+def create_addition_deck(min_num, max_num, max_seconds):
     deck = FlashcardDeck()
-    for i in range(level + 1):
+    for i in range(min_num, max_num + 1):
+        for j in range(i + 1):
+            deck.add(Flashcard(f'{j} + {i-j} = ', f'{i}', max_seconds))
+    return deck
+
+# create_subtraction_deck(min_num, max_num, max_seconds)
+# Create subtraction flashcards with numbers min_num, ..., max_num
+# return a FlashcardDeck
+def create_subtraction_deck(min_num, max_num, max_seconds):
+    deck = FlashcardDeck()
+    for i in range(min_num, max_num + 1):
+        for j in range(i + 1):
+            deck.add(Flashcard(f'{i} - {j} = ', f'{i-j}', max_seconds))
+    return deck
+
+# create_addition_subtraction_deck(min_num, max_num, max_seconds)
+# Create addition and subtraction flashcards with numbers min_num, ..., max_num
+# return a FlashcardDeck
+def create_addition_subtraction_deck(min_num, max_num, max_seconds):
+    deck = FlashcardDeck()
+    for i in range(min_num, max_num + 1):
         for j in range(i + 1):
             deck.add(Flashcard(f'{j} + {i-j} = ', f'{i}', max_seconds))
             deck.add(Flashcard(f'{i} - {j} = ', f'{i-j}', max_seconds))
     return deck
 
-# create_multiplication_deck(level)
-# Create multiplication flashcards with numbers 1, ..., level
+# create_multiplication_deck(min_num, max_num, max_seconds)
+# Create multiplication flashcards with numbers min_num, ..., max_num
 # return a FlashcardDeck
-def create_multiplication_deck(level, max_seconds):
+def create_multiplication_deck(min_num, max_num, max_seconds):
     deck = FlashcardDeck()
-    for i in range(1, level + 1):
-        for j in range(1, level + 1):
+    for i in range(min_num, max_num + 1):
+        for j in range(1, max_num + 1):
             deck.add(Flashcard(f'{i} x {j} = ', f'{i*j}', max_seconds))
     return deck
 
-# Prompt for addition/subtraction or multiplication
-s = input('Enter 1 for addition/subtraction or 2 for multiplication: ')
-operation = 0
-while operation < 1:
-    try:
-        operation = int(s)
-    except:
-        pass
-    if operation < 1:
-        s = input('Invalid number.')
+# prompt_for_int(prompt, min_int, max_int, error_msg)
+# Prompt for a positive integer between min_int and max_int (inclusive) and return it.
+def prompt_for_int(prompt, min_int, max_int, error_msg='Invalid number.'):
+    if min_int >= max_int:
+        raise Exception(f'Invalid bounds: min_int={min_int}, max_int={max_int}')
+    s = input(prompt)
+    num = min_int - 1
+    while num < min_int or num > max_int:
+        try:
+            num = int(s)
+        except:
+            pass
+        if num < min_int or num > max_int:
+            print(error_msg)
+    return num
 
-# Prompt for level
-s = input('What is the largest number we should use? Enter a number between 1 and 20: ')
-level = 0
-while level < 1 or level > 20:
-    try:
-        level = int(s)
-    except:
-        pass
-    if level < 1 or level > 20:
-        s = input('Invalid number.')
+# Prompt for addition/subtraction or multiplication
+operation = prompt_for_int('Enter 1 for addition, 2 for subtraction, 3 for addition and subtraction, 4 for multiplication: ', 1, 4)
+
+# Prompt for min_num
+min_num = prompt_for_int('What is the smallest number we should use? Enter a number between 1 and 20: ', 1, 20)
+
+# Prompt for max_num
+max_num = prompt_for_int(f'What is the largest number we should use? Enter a number between {min_num} and 20: ', min_num, 20)
 
 # Prompt for max seconds per fact
-s = input('How many seconds per fact? ')
-max_seconds = 0
-while max_seconds < 1:
-    try:
-        max_seconds = int(s)
-    except:
-        pass
-    if max_seconds < 1:
-        s = input('Invalid number.')
+max_seconds = prompt_for_int('How many seconds per fact? ', 1, 10000)
 
 # Create deck
 if operation == 1:
-    deck = create_addition_deck(level, max_seconds)
+    deck = create_addition_deck(min_num, max_num, max_seconds)
+elif operation == 2:
+    deck = create_subtraction_deck(min_num, max_num, max_seconds)
+elif operation == 3:
+    deck = create_addition_subtraction_deck(min_num, max_num, max_seconds)
 else:
-    deck = create_multiplication_deck(level, max_seconds)
+    deck = create_multiplication_deck(min_num, max_num, max_seconds)
+    
 
 # Main loop
 quit_game = False
