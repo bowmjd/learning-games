@@ -2,6 +2,7 @@
 # Practice spelling
 import random
 import time
+import playsound
 
 correct_msg = """
 
