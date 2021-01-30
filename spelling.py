@@ -23,7 +23,10 @@ incorrect_msg = """
 * * * * * * * * * * * *
 """
 
+wordlist_path = r"data/english-top-3000.txt"
+mp3_path = "download"
 max_tries = 3
+max_seconds = 30
 
 class Flashcard:
     def __init__(self, front, back, max_recall_time):
@@ -62,45 +65,16 @@ class FlashcardDeck:
             self.cards = self.cards[0:i] + self.cards[i+1:]
             return card
 
-# create_spelling_deck(wordlist, max_seconds)
-# Create addition flashcards with numbers min_num, ..., max_num
-# return a FlashcardDeck
-def create_addition_deck(min_num, max_num, max_seconds):
+# create_spelling_deck(wordlist_path, max_seconds)
+# Create spelling deck from wordlist file.
+# Return a FlashcardDeck.
+def create_spelling_deck(wordlist_path, mp3_path, max_seconds):
     deck = FlashcardDeck()
-    for i in range(min_num, max_num + 1):
-        for j in range(i + 1):
-            deck.add(Flashcard(f'{j} + {i-j} = ', f'{i}', max_seconds))
-    return deck
-
-# create_subtraction_deck(min_num, max_num, max_seconds)
-# Create subtraction flashcards with numbers min_num, ..., max_num
-# return a FlashcardDeck
-def create_subtraction_deck(min_num, max_num, max_seconds):
-    deck = FlashcardDeck()
-    for i in range(min_num, max_num + 1):
-        for j in range(i + 1):
-            deck.add(Flashcard(f'{i} - {j} = ', f'{i-j}', max_seconds))
-    return deck
-
-# create_addition_subtraction_deck(min_num, max_num, max_seconds)
-# Create addition and subtraction flashcards with numbers min_num, ..., max_num
-# return a FlashcardDeck
-def create_addition_subtraction_deck(min_num, max_num, max_seconds):
-    deck = FlashcardDeck()
-    for i in range(min_num, max_num + 1):
-        for j in range(i + 1):
-            deck.add(Flashcard(f'{j} + {i-j} = ', f'{i}', max_seconds))
-            deck.add(Flashcard(f'{i} - {j} = ', f'{i-j}', max_seconds))
-    return deck
-
-# create_multiplication_deck(min_num, max_num, max_seconds)
-# Create multiplication flashcards with numbers min_num, ..., max_num
-# return a FlashcardDeck
-def create_multiplication_deck(min_num, max_num, max_seconds):
-    deck = FlashcardDeck()
-    for i in range(min_num, max_num + 1):
-        for j in range(1, max_num + 1):
-            deck.add(Flashcard(f'{i} x {j} = ', f'{i*j}', max_seconds))
+    with open(wordlist_path, 'r') as f:
+        line = f.readline()
+        while line:
+            deck.add(Flashcard(f'{mp3_path}/{line.lower().strip()}.mp3', line.strip(), max_seconds))
+            line = f.readline()
     return deck
 
 # prompt_for_int(prompt, min_int, max_int, error_msg)
@@ -120,70 +94,65 @@ def prompt_for_int(prompt, min_int, max_int, error_msg='Invalid number.'):
     return num
 
 # Prompt for addition/subtraction or multiplication
-operation = prompt_for_int('Enter 1 for addition, 2 for subtraction, 3 for addition and subtraction, 4 for multiplication: ', 1, 4)
-
-# Prompt for min_num
-min_num = prompt_for_int('What is the smallest number we should use? Enter a number between 1 and 20: ', 1, 20)
-
-# Prompt for max_num
-max_num = prompt_for_int(f'What is the largest number we should use? Enter a number between {min_num} and 20: ', min_num, 20)
-
-# Prompt for max seconds per fact
-max_seconds = prompt_for_int('How many seconds per fact? ', 1, 10000)
+# operation = prompt_for_int('Enter 1 for addition, 2 for subtraction, 3 for addition and subtraction, 4 for multiplication: ', 1, 4)
 
 # Create deck
-if operation == 1:
-    deck = create_addition_deck(min_num, max_num, max_seconds)
-elif operation == 2:
-    deck = create_subtraction_deck(min_num, max_num, max_seconds)
-elif operation == 3:
-    deck = create_addition_subtraction_deck(min_num, max_num, max_seconds)
-else:
-    deck = create_multiplication_deck(min_num, max_num, max_seconds)
-    
+deck = create_spelling_deck(wordlist_path, mp3_path, max_seconds)
 
 # Main loop
 quit_game = False
-attempts = 0
+total_attempts = 0
 correct = 0
 mastered = 0
 total_seconds = 0
 card = deck.next()
+tries = 0
 while not quit_game and card != None:
+    sound_played = False
+    while not sound_played:
+        try:
+            playsound.playsound(card.front)
+            sound_played = True
+        except:
+            card = deck.next()
     start_time = time.time()
-    print('')
-    answer = input(f'Enter your answer or Q to quit. {card.front}').strip()
+    answer = input('\nType the spelling here: ').strip()
     if answer.upper() == 'Q':
         quit_game = True
     else:
         end_time = time.time()
-        attempts += 1
+        total_attempts += 1
+        tries += 1
         answer_seconds = end_time - start_time
         total_seconds += answer_seconds
         (is_correct, is_mastered) = card.attempt(answer, answer_seconds)
+        # If mastered, do not return the card to the deck
         if is_mastered:
             mastered += 1
-        else:
+            card = deck.next()
+        # If not mastered and tries > max_tries, return the card to the deck
+        elif tries >= max_tries:
             deck.add(card)
+            card = deck.next()
         if is_correct:
             correct += 1
+            tries = 0
             print(correct_msg)
-            card = deck.next()
         else:
             print(incorrect_msg)
 
 # Show stats and exit
-if attempts == 0:
+if total_attempts == 0:
     pct_correct = 0.0
     pct_mastered = 0.0
     seconds_per_answer = 0.0
 else:
-    pct_correct = round(correct * 100.0 / attempts, 1)
-    pct_mastered = round(mastered * 100.0 / attempts, 1)
-    seconds_per_answer = round(total_seconds * 1.0 / attempts, 1)
+    pct_correct = round(correct * 100.0 / total_attempts, 1)
+    pct_mastered = round(mastered * 100.0 / total_attempts, 1)
+    seconds_per_answer = round(total_seconds * 1.0 / total_attempts, 1)
 print(f"""
 
-Attempted: {attempts}
+Attempted: {total_attempts}
 Correct: {correct} ({pct_correct}%)
 Mastered: {mastered} ({pct_mastered}%)
 Avg Seconds per Answer: {seconds_per_answer}
