@@ -1,5 +1,5 @@
-# mathfacts.py
-# Review addition, subtraction, and multiplication facts
+# spelling.py
+# Practice spelling
 import random
 import time
 
@@ -22,6 +22,7 @@ incorrect_msg = """
 * * * * * * * * * * * *
 """
 
+max_tries = 3
 
 class Flashcard:
     def __init__(self, front, back, max_recall_time):
@@ -60,7 +61,7 @@ class FlashcardDeck:
             self.cards = self.cards[0:i] + self.cards[i+1:]
             return card
 
-# create_addition_deck(min_num, max_num, max_seconds)
+# create_spelling_deck(wordlist, max_seconds)
 # Create addition flashcards with numbers min_num, ..., max_num
 # return a FlashcardDeck
 def create_addition_deck(min_num, max_num, max_seconds):
