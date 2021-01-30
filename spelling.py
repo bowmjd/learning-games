@@ -107,7 +107,7 @@ mastered = 0
 total_seconds = 0
 card = deck.next()
 tries = 0
-while not quit_game and card != None:
+while card != None:
     sound_played = False
     while not sound_played:
         try:
@@ -116,9 +116,14 @@ while not quit_game and card != None:
         except:
             card = deck.next()
     start_time = time.time()
-    answer = input('\nType the spelling here: ').strip()
+    answer = input('\nType the spelling here (Q to quit, S to skip): ').strip()
     if answer.upper() == 'Q':
-        quit_game = True
+        break
+    elif answer.upper() == 'S':
+        deck.add(card)
+        card = deck.next()
+        tries = 0
+        pass
     else:
         end_time = time.time()
         total_attempts += 1
