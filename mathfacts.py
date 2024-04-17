@@ -101,6 +101,16 @@ def create_multiplication_deck(min_num, max_num, max_seconds):
             deck.add(Flashcard(f'{i} x {j} = ', f'{i*j}', max_seconds))
     return deck
 
+# create_division_deck(min_num, max_num, max_seconds)
+# Create division flashcards with numbers min_num, ..., max_num
+# return a FlashcardDeck
+def create_division_deck(min_num, max_num, max_seconds):
+    deck = FlashcardDeck()
+    for i in range(min_num, max_num + 1):
+        for j in range(1, max_num + 1):
+            deck.add(Flashcard(f'{i*j} / {j} = ', f'{i}', max_seconds))
+    return deck
+
 # prompt_for_int(prompt, min_int, max_int, error_msg)
 # Prompt for a positive integer between min_int and max_int (inclusive) and return it.
 def prompt_for_int(prompt, min_int, max_int, error_msg='Invalid number.'):
@@ -118,7 +128,7 @@ def prompt_for_int(prompt, min_int, max_int, error_msg='Invalid number.'):
     return num
 
 # Prompt for addition/subtraction or multiplication
-operation = prompt_for_int('Enter 1 for addition, 2 for subtraction, 3 for addition and subtraction, 4 for multiplication: ', 1, 4)
+operation = prompt_for_int('Enter 1 for addition, 2 for subtraction, 3 for addition and subtraction, 4 for multiplication, 5 for division: ', 1, 5)
 
 # Prompt for min_num
 min_num = prompt_for_int('What is the smallest number we should use? Enter a number between 1 and 20: ', 1, 20)
@@ -136,8 +146,10 @@ elif operation == 2:
     deck = create_subtraction_deck(min_num, max_num, max_seconds)
 elif operation == 3:
     deck = create_addition_subtraction_deck(min_num, max_num, max_seconds)
-else:
+elif operation == 4:
     deck = create_multiplication_deck(min_num, max_num, max_seconds)
+else:
+    deck = create_division_deck(min_num, max_num, max_seconds)
     
 
 # Main loop
